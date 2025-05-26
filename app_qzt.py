@@ -8,6 +8,7 @@ from function import generate_barcode_pdf
 import base64
 from io import BytesIO
 import streamlit.components.v1 as components
+import json
 
 # Load the config.yaml file
 with open('config.yaml') as file:
@@ -57,7 +58,8 @@ if page == "Login":
                             tracking_number, description)
 
                         if barcode_pdf_buffer:
-                            base64_pdf = base64.b64encode(barcode_pdf_buffer.getvalue()).decode()
+                            base64_pdf = base64.b64encode(
+                                barcode_pdf_buffer.getvalue()).decode()
                             base64_pdf_js = json.dumps(base64_pdf)
                             html_code = f'''
                             <!DOCTYPE html>
