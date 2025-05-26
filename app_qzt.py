@@ -1,14 +1,11 @@
-# --- Streamlit + QZ Tray 打印系统 ---
 import pandas as pd
 import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
-from function import generate_barcode_pdf
+from function import generate_barcode_pdf, render_qz_html
 import base64
 from io import BytesIO
-import streamlit.components.v1 as components
-import json
 
 # Load the config.yaml file
 with open('config.yaml') as file:
@@ -56,60 +53,10 @@ if page == "Login":
 
                         barcode_pdf_buffer = generate_barcode_pdf(
                             tracking_number, description)
-
                         if barcode_pdf_buffer:
                             base64_pdf = base64.b64encode(
                                 barcode_pdf_buffer.getvalue()).decode()
-                            base64_pdf_js = json.dumps(base64_pdf)
-                            html_code = f'''
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>Print with QZ Tray</title>
-                                <!-- 加载 RSVP 和 QZ Tray JS -->
-                                <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
-                                <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
-                            </head>
-                            <body>
-                                <h4>正在连接 QZ Tray...</h4>
-                                <button onclick="sendToPrinter()">🖨️ 打印标签</button>
-                                <script>
-                                const base64_pdf = {base64_pdf_js};
-                                window.onload = async function() {{
-                                    if (typeof qz === 'undefined') {{
-                                        alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
-                                        return;
-                                    }}
-                                    try {{
-                                        await qz.websocket.connect();
-                                        alert("✅ QZ Tray 已连接");
-                                    }} catch (e) {{
-                                        alert("⚠️ 无法连接 QZ Tray，请确保客户端已启动: " + e);
-                                    }}
-                                }}
-
-                                async function sendToPrinter() {{
-                                    if (!qz.websocket.isActive()) {{
-                                        alert("请先连接 QZ Tray");
-                                        return;
-                                    }}
-                                    try {{
-                                        const config = qz.configs.create("AM-243-BT");
-                                        await qz.print(config, [{{
-                                            type: 'pdf',
-                                            format: 'base64',
-                                            data: base64_pdf
-                                        }}]);
-                                        alert("✅ 打印成功！");
-                                    }} catch (err) {{
-                                        alert("打印失败: " + err);
-                                    }}
-                                }}
-                                </script>
-                            </body>
-                            </html>
-                            '''
-                            components.html(html_code, height=400)
+                            render_qz_html(base64_pdf)
                     else:
                         st.error('No tracking number found')
             else:

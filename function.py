@@ -3,6 +3,8 @@ from barcode.codex import Code128
 from barcode.writer import ImageWriter
 from PIL import Image, ImageDraw, ImageFont
 import io
+import streamlit.components.v1 as components
+import json
 
 
 def generate_barcode_pdf(label, description, dpi=300):
@@ -62,6 +64,73 @@ def generate_barcode_pdf(label, description, dpi=300):
     output_buffer.seek(0)
 
     return output_buffer
+
+
+def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
+    base64_clean = base64_pdf.replace('\n', '')
+    base64_pdf_js = json.dumps(base64_clean)
+
+    html_code = f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Print with QZ Tray</title>
+        <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
+    </head>
+    <body>
+        <h4>正在连接 QZ Tray...</h4>
+        <button onclick="sendToPrinter()">🖨️ 打印标签</button>
+        <script>
+        const base64_pdf = {base64_pdf_js};
+
+        window.onload = async function() {{
+            if (typeof qz === 'undefined') {{
+                alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
+                return;
+            }}
+            try {{
+                await qz.websocket.connect();
+                alert("✅ QZ Tray 已连接");
+            }} catch (e) {{
+                alert("⚠️ 无法连接 QZ Tray，请确保客户端已启动: " + e);
+            }}
+        }}
+
+        async function sendToPrinter() {{
+            if (!qz.websocket.isActive()) {{
+                alert("请先连接 QZ Tray");
+                return;
+            }}
+
+            if (!base64_pdf || typeof base64_pdf !== 'string') {{
+                alert("❌ base64 数据无效！");
+                console.log("base64_pdf:", base64_pdf);
+                return;
+            }}
+
+            console.log("✅ base64_pdf 前 50 字符:", base64_pdf.substring(0, 50));
+
+            try {{
+                const config = qz.configs.create("{printer_name}");
+                await qz.print(config, [{{
+                    type: 'pdf',
+                    format: 'base64',
+                    data: base64_pdf
+                }}]);
+                alert("✅ 打印成功！");
+            }} catch (err) {{
+                alert("打印失败: " + err);
+                console.error(err);
+            }}
+        }}
+        </script>
+    </body>
+    </html>
+    '''
+
+    components.html(html_code, height=400)
+
 
 if "__name__" == "__main__":
     generate_barcode_pdf("123456789012", "Sample Description")
