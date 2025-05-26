@@ -64,22 +64,22 @@ if page == "Login":
                             <html>
                             <head>
                                 <title>Print with QZ Tray</title>
-                                <script src="https://cdnjs.cloudflare.com/ajax/libs/qz-tray/2.1.0/qz-tray.js"></script>
+                                <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
                             </head>
                             <body>
-                                <button onclick="connectQZ()">🔌 连接 QZ Tray</button>
+                                <h4>正在连接 QZ Tray...</h4>
                                 <button onclick="sendToPrinter()">🖨️ 打印标签</button>
                                 <script>
-                                async function connectQZ() {{
+                                window.onload = async function() {{
                                     if (typeof qz === 'undefined') {{
-                                        alert("❌ QZ Tray 未加载，请检查网络或刷新页面。");
+                                        alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
                                         return;
                                     }}
                                     try {{
                                         await qz.websocket.connect();
-                                        alert("✅ 已成功连接 QZ Tray！");
+                                        alert("✅ QZ Tray 已连接");
                                     }} catch (e) {{
-                                        alert("⚠️ 连接失败：" + e);
+                                        alert("⚠️ 无法连接 QZ Tray，请确保客户端已启动: " + e);
                                     }}
                                 }}
 
@@ -105,7 +105,7 @@ if page == "Login":
                             </body>
                             </html>
                             '''
-                            components.html(html_code, height=350)
+                            components.html(html_code, height=400)
                     else:
                         st.error('No tracking number found')
             else:
