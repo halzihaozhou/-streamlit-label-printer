@@ -1,10 +1,35 @@
 import streamlit.components.v1 as components
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
 import json
+
+
+def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
+    width, height = 400, 200
+    image = Image.new('RGB', (width, height), color='white')
+    draw = ImageDraw.Draw(image)
+
+    try:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
+    except Exception as e:
+        print("Font load error:", e)
+        font = ImageFont.load_default()
+
+    draw.text((10, 30),
+              f"Tracking #: {tracking_number}",
+              font=font,
+              fill='black')
+    draw.text((10, 100), f"Desc: {description}", font=font, fill='black')
+
+    buffer = BytesIO()
+    image.save(buffer, format='PNG')
+    buffer.seek(0)
+    return buffer
 
 
 def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
     base64_clean = base64_img.replace('\n', '')
-    base64_img_js = json.dumps(base64_clean)  # 生成 JSON 字符串，避免 JS 中引号冲突
+    base64_img_js = json.dumps(base64_clean)  # 确保是合法 JS 字符串
 
     html_code = f"""
     <!DOCTYPE html>
@@ -20,12 +45,10 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
         <script>
         const base64_img = {base64_img_js};
 
-        // 设置 promise 实现
         qz.api.setPromiseType(function promise(resolver) {{
             return new RSVP.Promise(resolver);
         }});
 
-        // 设置全局异常捕获（替代 setExceptionHandler）
         window.onerror = function(message, source, lineno, colno, error) {{
             console.warn("QZ Tray Error:", message);
             return true;
@@ -45,6 +68,7 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
         }};
 
         async function sendToPrinter() {{
+            console.log("🔍 打印机名: {printer_name}");
             if (!qz.websocket.isActive()) {{
                 alert("请先连接 QZ Tray");
                 return;
@@ -78,35 +102,3 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
     """
 
     components.html(html_code, height=400)
-
-
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
-
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
-import os
-
-
-def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
-    width, height = 400, 200
-    image = Image.new('RGB', (width, height), color='white')
-    draw = ImageDraw.Draw(image)
-
-    try:
-        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
-    except Exception as e:
-        print("Font load error:", e)
-        font = ImageFont.load_default()
-
-    # Ensure description won't crash due to unsupported characters
-    draw.text((10, 30),
-              f"Tracking #: {tracking_number}",
-              font=font,
-              fill='black')
-    draw.text((10, 100), f"Desc: {description}", font=font, fill='black')
-
-    buffer = BytesIO()
-    image.save(buffer, format='PNG')
-    buffer.seek(0)
-    return buffer
