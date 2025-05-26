@@ -92,11 +92,11 @@ if page == "Login":
                                     }}
                                     try {{
                                         const config = qz.configs.create("AM-243-BT");
-                                        await qz.print(config, [{{
+                                        await qz.print(config, [{
                                             type: 'pdf',
                                             format: 'base64',
-                                            data: "{base64_pdf}"
-                                        }}]);
+                                            data: base64_pdf
+                                        }]);
                                         alert("✅ 打印成功！");
                                     }} catch (err) {{
                                         alert("打印失败: " + err);
