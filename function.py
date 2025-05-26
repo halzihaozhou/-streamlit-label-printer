@@ -1,92 +1,26 @@
-import streamlit as st
-from barcode.codex import Code128
-from barcode.writer import ImageWriter
-from PIL import Image, ImageDraw, ImageFont
-import io
-
-
-def generate_barcode_pdf(label, description, dpi=300):
-    # Calculate dimensions for 2.25 x 1.25 inches at the given DPI
-    label_width_inch = 2
-    label_height_inch = 1
-    width_px = int(label_width_inch * dpi)
-    height_px = int(label_height_inch * dpi)
-
-    # Generate the barcode
-    options = {
-        "module_width": 0.2,
-        "module_height": 5,
-        "font_size": 4,
-        "text_distance": 2
-    }
-    barcode = Code128(label, writer=ImageWriter())
-    barcode_buffer = io.BytesIO()
-    barcode.write(barcode_buffer, options=options)
-    barcode_buffer.seek(0)
-
-    # Load the barcode image
-    barcode_image = Image.open(barcode_buffer)
-
-    # Resize the barcode image to fit within the specified width while maintaining aspect ratio
-    barcode_width, barcode_height = barcode_image.size
-    scale_factor = width_px / barcode_width
-    barcode_image = barcode_image.resize(
-        (width_px, int(barcode_height * scale_factor)), Image.LANCZOS)
-
-    # Create the final image with the correct label size
-    final_image = Image.new('RGB', (width_px, height_px), 'white')
-
-    # Paste the barcode image onto the final image, centered vertically
-    barcode_y = (height_px - barcode_image.height) // 2
-    final_image.paste(barcode_image, (0, barcode_y))
-
-    # Prepare to draw the label and description
-    draw = ImageDraw.Draw(final_image)
-
-    # Load a Unicode font
-    font_path = "DejaVuSans-Bold.ttf"  # Ensure this path is correct
-    try:
-        font = ImageFont.truetype(font_path, int(10 * scale_factor))
-    except IOError:
-        st.error(f"Font file not found: {font_path}")
-        return None
-
-    # Draw the description
-    description_y = barcode_y + barcode_image.height + 2
-    draw.text((10, description_y), description, font=font, fill="black")
-
-    # Save the final image to a buffer
-    output_buffer = io.BytesIO()
-    pdf_image = final_image.convert("RGB")
-    pdf_image.save(output_buffer, format="PDF", resolution=dpi)
-    output_buffer.seek(0)
-
-    return output_buffer
-
-
 import streamlit.components.v1 as components
 import json
 
 
-def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
-    base64_clean = base64_pdf.replace('\n', '')
-    base64_pdf_js = json.dumps(base64_clean)
+def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
+    base64_clean = base64_img.replace('\n', '')
+    base64_img_js = json.dumps(base64_clean)
 
     html_code = f'''
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Print with QZ Tray</title>
+        <title>Print Image with QZ Tray</title>
         <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
     </head>
     <body>
         <h4>正在连接 QZ Tray...</h4>
-        <button onclick="sendToPrinter()">🖨️ 打印标签</button>
+        <button onclick="sendToPrinter()">🖨️ 打印图像</button>
         <script>
-        const base64_pdf = {base64_pdf_js};
+        const base64_img = {base64_img_js};
 
-        // ✅ 跳过签名验证（仅开发测试环境）
+        // ✅ 禁用签名验证（开发测试）
         qz.security.setSignaturePromise(() => Promise.resolve());
 
         window.onload = async function() {{
@@ -103,16 +37,16 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         }}
 
         async function sendToPrinter() {{
-            console.log("✅ base64_pdf typeof:", typeof base64_pdf);
-            console.log("✅ base64_pdf preview:", base64_pdf?.substring(0, 100));
+            console.log("✅ base64_img typeof:", typeof base64_img);
+            console.log("✅ base64_img preview:", base64_img?.substring(0, 100));
 
             if (!qz.websocket.isActive()) {{
                 alert("请先连接 QZ Tray");
                 return;
             }}
 
-            if (!base64_pdf || typeof base64_pdf !== 'string') {{
-                alert("❌ base64_pdf 是空的或不是字符串！");
+            if (!base64_img || typeof base64_img !== 'string') {{
+                alert("❌ base64_img 是空的或不是字符串！");
                 return;
             }}
 
@@ -121,9 +55,9 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
                     copies: 1
                 }});
                 await qz.print(config, [{{
-                    type: 'pdf',
+                    type: 'image',
                     format: 'base64',
-                    data: base64_pdf
+                    data: base64_img
                 }}]);
                 alert("✅ 打印成功！");
             }} catch (err) {{
@@ -137,3 +71,29 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
     '''
 
     components.html(html_code, height=400)
+
+
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+
+
+def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
+    width, height = 400, 200
+    image = Image.new('RGB', (width, height), color='white')
+    draw = ImageDraw.Draw(image)
+
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except:
+        font = ImageFont.load_default()
+
+    draw.text((10, 30),
+              f"Tracking #: {tracking_number}",
+              font=font,
+              fill='black')
+    draw.text((10, 100), f"Desc: {description}", font=font, fill='black')
+
+    buffer = BytesIO()
+    image.save(buffer, format='PNG')
+    buffer.seek(0)
+    return buffer

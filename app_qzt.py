@@ -1,9 +1,10 @@
+
 import pandas as pd
 import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
-from function import generate_barcode_pdf, render_qz_html
+from function import generate_barcode_image, render_qz_image_html
 import base64
 from io import BytesIO
 
@@ -51,12 +52,12 @@ if page == "Login":
                         st.success(f"新条形码: {tracking_number}")
                         st.success(f"标注: {description}")
 
-                        barcode_pdf_buffer = generate_barcode_pdf(
+                        barcode_img_buffer = generate_barcode_image(
                             tracking_number, description)
-                        if barcode_pdf_buffer:
-                            base64_pdf = base64.b64encode(
-                                barcode_pdf_buffer.getvalue()).decode()
-                            render_qz_html(base64_pdf)
+                        if barcode_img_buffer:
+                            base64_img = base64.b64encode(
+                                barcode_img_buffer.getvalue()).decode()
+                            render_qz_image_html(base64_img)
                     else:
                         st.error('No tracking number found')
             else:
