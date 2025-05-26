@@ -2,81 +2,87 @@ import streamlit.components.v1 as components
 import json
 
 
-def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
-    base64_clean = base64_img.replace('\n', '')
-    base64_img_js = json.dumps(base64_clean)
+    import streamlit.components.v1 as components
+    import json
 
-    html_code = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Print Image with QZ Tray</title>
-        <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
-    </head>
-    <body>
-        <h4>正在连接 QZ Tray...</h4>
-        <button onclick="sendToPrinter()">🖨️ 打印图像</button>
-        <script>
-const base64_img = {base64_img_js};
 
-qz.api.setPromiseType(function promise(resolver) {
-    return new RSVP.Promise(resolver);
-});
+    def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
+        base64_clean = base64_img.replace('\n', '')
+        base64_img_js = json.dumps(base64_clean)  # 生成 JSON 字符串，避免 JS 中引号冲突
 
-window.onerror = function(message, source, lineno, colno, error) {
-    console.warn("QZ Tray Error:", message);
-    return true;
-};
+        html_code = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Print Image with QZ Tray</title>
+            <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
+        </head>
+        <body>
+            <h4>正在连接 QZ Tray...</h4>
+            <button onclick="sendToPrinter()">🖨️ 打印图像</button>
+            <script>
+            const base64_img = {base64_img_js};
 
-window.onload = async function() {
-    if (typeof qz === 'undefined') {
-        alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
-        return;
-    }
-    try {
-        await qz.websocket.connect();
-        alert("✅ QZ Tray 已连接");
-    } catch (e) {
-        alert("⚠️ 无法连接 QZ Tray，请确保客户端已启动: " + e);
-    }
-};
+            // 设置 promise 实现
+            qz.api.setPromiseType(function promise(resolver) {{
+                return new RSVP.Promise(resolver);
+            }});
 
-async function sendToPrinter() {
-    if (!qz.websocket.isActive()) {
-        alert("请先连接 QZ Tray");
-        return;
-    }
+            // 设置全局异常捕获（替代 setExceptionHandler）
+            window.onerror = function(message, source, lineno, colno, error) {{
+                console.warn("QZ Tray Error:", message);
+                return true;
+            }};
 
-    if (!base64_img || typeof base64_img !== 'string') {
-        alert("❌ base64_img 是空的或不是字符串！");
-        return;
-    }
+            window.onload = async function() {{
+                if (typeof qz === 'undefined') {{
+                    alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
+                    return;
+                }}
+                try {{
+                    await qz.websocket.connect();
+                    alert("✅ QZ Tray 已连接");
+                }} catch (e) {{
+                    alert("⚠️ 无法连接 QZ Tray，请确保客户端已启动: " + e);
+                }}
+            }};
 
-    try {
-        const config = qz.configs.create("{printer_name}", {
-            copies: 1,
-            rasterize: false,
-            altPrinting: false
-        });
-        await qz.print(config, [{
-            type: 'image',
-            format: 'base64',
-            data: base64_img
-        }]);
-        alert("✅ 打印成功！");
-    } catch (err) {
-        alert("打印失败: " + err);
-        console.error(err);
-    }
-}
-</script>
+            async function sendToPrinter() {{
+                if (!qz.websocket.isActive()) {{
+                    alert("请先连接 QZ Tray");
+                    return;
+                }}
 
-    </body>
-    </html>
-    """
+                if (!base64_img || typeof base64_img !== 'string') {{
+                    alert("❌ base64_img 是空的或不是字符串！");
+                    return;
+                }}
 
-    components.html(html_code, height=400)
+                try {{
+                    const config = qz.configs.create("{printer_name}", {{
+                        copies: 1,
+                        rasterize: false,
+                        altPrinting: false
+                    }});
+                    await qz.print(config, [{{
+                        type: 'image',
+                        format: 'base64',
+                        data: base64_img
+                    }}]);
+                    alert("✅ 打印成功！");
+                }} catch (err) {{
+                    alert("打印失败: " + err);
+                    console.error(err);
+                }}
+            }}
+            </script>
+        </body>
+        </html>
+        """
+
+        components.html(html_code, height=400)
+
 
 
 from PIL import Image, ImageDraw, ImageFont
