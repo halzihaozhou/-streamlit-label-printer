@@ -87,7 +87,7 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         <script>
         const base64_pdf = {base64_pdf_js};
 
-        // ✅ 修复: 使用小写 sha256()
+        // ✅ 正确 sha256 用法
         qz.security.setSignaturePromise(function(toSign) {{
             return Promise.resolve(sha256(toSign));
         }});
@@ -121,18 +121,11 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
 
             try {{
                 const config = qz.configs.create("{printer_name}", {{
-                    scaleContent: true,
-                    interpolation: "nearest",
                     copies: 1,
-                    colorType: "color",
-                    density: "default",
-                    altPrinting: false,
+                    scaleContent: true,
                     rasterize: false,
-                    jobName: "LabelPrintJob",
-                    units: "px",
-                    fallbackDensity: 300,
-                    pxPerInch: 300,
-                    paperThickness: null
+                    altPrinting: false,
+                    legacy: true  // ⛔ 强制跳过兼容性 split 检查
                 }});
                 await qz.print(config, [{{
                     type: 'pdf',
