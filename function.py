@@ -1,10 +1,9 @@
-
 import streamlit.components.v1 as components
 import json
 
+
 def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
-    base64_clean = base64_img.replace("
-", "")
+    base64_clean = base64_img.replace('\n', '')
     base64_img_js = json.dumps(base64_clean)
 
     html_code = f"""
@@ -22,6 +21,11 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
         const base64_img = {base64_img_js};
 
         qz.security.setSignaturePromise(() => Promise.resolve());
+
+        qz.api.setExceptionHandler(err => {{
+            console.warn("QZ Exception Bypassed:", err.message);
+            return false;
+        }});
 
         window.onload = async function() {{
             if (typeof qz === 'undefined') {{
@@ -74,9 +78,14 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
 
     components.html(html_code, height=400)
 
+
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
+
 
 def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
     width, height = 400, 200
@@ -90,7 +99,10 @@ def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
         font = ImageFont.load_default()
 
     # Ensure description won't crash due to unsupported characters
-    draw.text((10, 30), f"Tracking #: {tracking_number}", font=font, fill='black')
+    draw.text((10, 30),
+              f"Tracking #: {tracking_number}",
+              font=font,
+              fill='black')
     draw.text((10, 100), f"Desc: {description}", font=font, fill='black')
 
     buffer = BytesIO()
