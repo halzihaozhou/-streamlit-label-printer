@@ -56,8 +56,7 @@ if page == "Login":
                         if barcode_img_buffer:
                             base64_img = base64.b64encode(
                                 barcode_img_buffer.getvalue()).decode()
-                            render_qz_image_html(base64_img,
-                                                 printer_name="AM-243-BT")
+                            render_qz_image_html(base64_img)
                     else:
                         st.error('No tracking number found')
             else:
