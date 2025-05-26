@@ -19,8 +19,7 @@ with open('config.yaml') as file:
 authenticator = stauth.Authenticate(config['credentials'],
                                     config['cookie']['name'],
                                     config['cookie']['key'],
-                                    config['cookie']['expiry_days'],
-                                    config['preauthorized'])
+                                    config['cookie']['expiry_days'])
 # Sidebar navigation
 page = st.sidebar.selectbox(
     "Navigate", ["Login", "Register", "Forgot Password", "Forgot Username"])
@@ -92,8 +91,10 @@ if page == "Login":
                                         )
                                         st.stop()
 
-                                    # Step 2: Prepare label 
-                                    barcode_base64 = base64.b64encode(barcode_pdf_buffer.getvalue()).decode()
+                                    # Step 2: Prepare label
+                                    barcode_base64 = base64.b64encode(
+                                        barcode_pdf_buffer.getvalue()).decode(
+                                        )
 
                                     # Step 3: Send print job
                                     headers[
@@ -122,8 +123,7 @@ if page == "Login":
 
                                     if print_response.status_code == 201:
                                         st.success(
-                                            "Print job sent  successfully."
-                                        )
+                                            "Print job sent  successfully.")
                                     else:
                                         st.error(
                                             f"Failed to print: {print_response.status_code} {print_response.text}"
