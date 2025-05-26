@@ -37,6 +37,7 @@ def render_qz_image_html(base64_img: str):
         <title>Print with QZ Tray</title>
         <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.4.2/sha.js"></script>
     </head>
     <body>
         <h4>选择打印机并打印图像：</h4>
