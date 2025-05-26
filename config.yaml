@@ -1,0 +1,21 @@
+cookie:
+  expiry_days: 0
+  key: rsting
+  name: hulu
+credentials:
+  usernames:
+    hzhou:
+      email: hal@gmail.com
+      failed_login_attempts: 0
+      logged_in: true
+      name: zihao zhou
+      password: $2b$12$ZwgExugWEJbVz6IiFDE/meXoJIiDYpHHz4GJos9CJ1zORhgEEMQ2i
+    rzhang:
+      email: renee@gmail.com
+      failed_login_attempts: 0
+      logged_in: true
+      name: rixin zhang
+      password: $2b$12$cgV1Aqhq6OYfabk7X1D9buEFCRdCzAJSSuXDVFvQqYVVLqWU/OxN6
+preauthorized:
+  emails:
+  - melsby@gmail.com
