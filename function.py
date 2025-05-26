@@ -76,6 +76,10 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+import os
+
 
 def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
     width, height = 400, 200
@@ -83,10 +87,12 @@ def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
     draw = ImageDraw.Draw(image)
 
     try:
-        font = ImageFont.truetype("arial.ttf", 20)
-    except:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
+    except Exception as e:
+        print("Font load error:", e)
         font = ImageFont.load_default()
 
+    # Ensure description won't crash due to unsupported characters
     draw.text((10, 30),
               f"Tracking #: {tracking_number}",
               font=font,
