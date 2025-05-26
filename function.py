@@ -79,7 +79,6 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         <title>Print with QZ Tray</title>
         <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
     </head>
     <body>
         <h4>正在连接 QZ Tray...</h4>
@@ -87,10 +86,8 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         <script>
         const base64_pdf = {base64_pdf_js};
 
-        // ✅ 正确 sha256 用法
-        qz.security.setSignaturePromise(function(toSign) {{
-            return Promise.resolve(sha256(toSign));
-        }});
+        // ✅ 跳过签名验证（仅开发测试环境）
+        qz.security.setSignaturePromise(() => Promise.resolve());
 
         window.onload = async function() {{
             if (typeof qz === 'undefined') {{
@@ -121,11 +118,7 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
 
             try {{
                 const config = qz.configs.create("{printer_name}", {{
-                    copies: 1,
-                    scaleContent: true,
-                    rasterize: false,
-                    altPrinting: false,
-                    legacy: true  // ⛔ 强制跳过兼容性 split 检查
+                    copies: 1
                 }});
                 await qz.print(config, [{{
                     type: 'pdf',
@@ -144,7 +137,3 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
     '''
 
     components.html(html_code, height=400)
-
-
-if "__name__" == "__main__":
-    generate_barcode_pdf("123456789012", "Sample Description")
