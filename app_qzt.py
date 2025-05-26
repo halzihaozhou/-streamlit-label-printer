@@ -64,6 +64,7 @@ if page == "Login":
                             <html>
                             <head>
                                 <title>Print with QZ Tray</title>
+                                <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
                                 <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
                             </head>
                             <body>
