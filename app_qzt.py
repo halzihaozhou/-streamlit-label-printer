@@ -57,8 +57,8 @@ if page == "Login":
                             tracking_number, description)
 
                         if barcode_pdf_buffer:
-                            base64_pdf = base64.b64encode(
-                                barcode_pdf_buffer.getvalue()).decode()
+                            base64_pdf = base64.b64encode(barcode_pdf_buffer.getvalue()).decode()
+                            base64_pdf_js = json.dumps(base64_pdf)
                             html_code = f'''
                             <!DOCTYPE html>
                             <html>
@@ -72,7 +72,7 @@ if page == "Login":
                                 <h4>正在连接 QZ Tray...</h4>
                                 <button onclick="sendToPrinter()">🖨️ 打印标签</button>
                                 <script>
-                                const base64_pdf = "{base64_pdf}";
+                                const base64_pdf = {base64_pdf};
                                 window.onload = async function() {{
                                     if (typeof qz === 'undefined') {{
                                         alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
@@ -93,11 +93,11 @@ if page == "Login":
                                     }}
                                     try {{
                                         const config = qz.configs.create("AM-243-BT");
-                                        await qz.print(config, [{
+                                        await qz.print(config, [{{
                                             type: 'pdf',
                                             format: 'base64',
                                             data: base64_pdf
-                                        }]);
+                                        }}]);
                                         alert("✅ 打印成功！");
                                     }} catch (err) {{
                                         alert("打印失败: " + err);
