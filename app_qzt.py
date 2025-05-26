@@ -74,7 +74,7 @@ if page == "Login":
                                 <h4>正在连接 QZ Tray...</h4>
                                 <button onclick="sendToPrinter()">🖨️ 打印标签</button>
                                 <script>
-                                const base64_pdf = {base64_pdf};
+                                const base64_pdf = {base64_pdf_js};
                                 window.onload = async function() {{
                                     if (typeof qz === 'undefined') {{
                                         alert("❌ QZ Tray JS 未加载，请检查网络或关闭广告插件");
