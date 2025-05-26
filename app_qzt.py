@@ -17,10 +17,11 @@ with open('config.yaml') as file:
 authenticator = stauth.Authenticate(config['credentials'],
                                     config['cookie']['name'],
                                     config['cookie']['key'],
-                                    config['cookie']['expiry_days']
-                                   )
+                                    config['cookie']['expiry_days'])
+
 # Sidebar navigation
-page = st.sidebar.selectbox("Navigate", ["Login", "Register", "Forgot Password", "Forgot Username"])
+page = st.sidebar.selectbox(
+    "Navigate", ["Login", "Register", "Forgot Password", "Forgot Username"])
 
 # ---------------- LOGIN PAGE ----------------
 if page == "Login":
@@ -52,10 +53,12 @@ if page == "Login":
                         st.success(f"新条形码: {tracking_number}")
                         st.success(f"标注: {description}")
 
-                        barcode_pdf_buffer = generate_barcode_pdf(tracking_number, description)
+                        barcode_pdf_buffer = generate_barcode_pdf(
+                            tracking_number, description)
 
                         if barcode_pdf_buffer:
-                            base64_pdf = base64.b64encode(barcode_pdf_buffer.getvalue()).decode()
+                            base64_pdf = base64.b64encode(
+                                barcode_pdf_buffer.getvalue()).decode()
                             html_code = f'''
                             <!DOCTYPE html>
                             <html>
@@ -64,11 +67,28 @@ if page == "Login":
                                 <script src="https://cdnjs.cloudflare.com/ajax/libs/qz-tray/2.1.0/qz-tray.js"></script>
                             </head>
                             <body>
-                                <button onclick="sendToPrinter()">发送打印任务</button>
+                                <button onclick="connectQZ()">🔌 连接 QZ Tray</button>
+                                <button onclick="sendToPrinter()">🖨️ 打印标签</button>
                                 <script>
-                                async function sendToPrinter() {{
+                                async function connectQZ() {{
+                                    if (typeof qz === 'undefined') {{
+                                        alert("❌ QZ Tray 未加载，请检查网络或刷新页面。");
+                                        return;
+                                    }}
                                     try {{
                                         await qz.websocket.connect();
+                                        alert("✅ 已成功连接 QZ Tray！");
+                                    }} catch (e) {{
+                                        alert("⚠️ 连接失败：" + e);
+                                    }}
+                                }}
+
+                                async function sendToPrinter() {{
+                                    if (!qz.websocket.isActive()) {{
+                                        alert("请先连接 QZ Tray");
+                                        return;
+                                    }}
+                                    try {{
                                         const config = qz.configs.create("AM-243-BT");
                                         const rawData = atob("{base64_pdf}");
                                         const bytes = new Uint8Array(rawData.length);
@@ -76,18 +96,16 @@ if page == "Login":
                                             bytes[i] = rawData.charCodeAt(i);
                                         }}
                                         await qz.print(config, [bytes]);
-                                        alert("打印成功！");
+                                        alert("✅ 打印成功！");
                                     }} catch (err) {{
                                         alert("打印失败: " + err);
-                                    }} finally {{
-                                        qz.websocket.disconnect();
                                     }}
                                 }}
                                 </script>
                             </body>
                             </html>
                             '''
-                            components.html(html_code, height=250)
+                            components.html(html_code, height=350)
                     else:
                         st.error('No tracking number found')
             else:
@@ -101,7 +119,8 @@ if page == "Login":
 elif page == "Register":
     st.subheader("Register New User")
     try:
-        email, username, name = authenticator.register_user(pre_authorization=False)
+        email, username, name = authenticator.register_user(
+            pre_authorized=False)
         if email:
             st.success('User registered successfully')
     except Exception as e:
