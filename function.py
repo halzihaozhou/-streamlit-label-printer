@@ -67,7 +67,7 @@ def generate_barcode_pdf(label, description, dpi=300):
 
 
 def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
-    base64_clean = base64_pdf.replace('\\n', '')
+    base64_clean = base64_pdf.replace('\n', '')
     base64_pdf_js = json.dumps(base64_clean)
 
     html_code = f'''
