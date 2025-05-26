@@ -64,6 +64,7 @@ if page == "Login":
                             <html>
                             <head>
                                 <title>Print with QZ Tray</title>
+                                <!-- 加载 RSVP 和 QZ Tray JS -->
                                 <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
                                 <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
                             </head>
@@ -84,23 +85,22 @@ if page == "Login":
                                     }}
                                 }}
 
-                                async function sendToPrinter() {
-                                  if (!qz.websocket.isActive()) {
-                                    alert("请先连接 QZ Tray");
-                                    return;
-                                  }
-                                  try {
-                                    const config = qz.configs.create("AM-243-BT");
-                                    await qz.print(config, [{
-                                      type: 'pdf',
-                                      format: 'base64',
-                                      data: "{base64_pdf}"
-                                    }]);
-                                    alert("✅ 打印成功！");
-                                  } catch (err) {
-                                    alert("打印失败: " + err);
-                                  }
-                                }
+                                async function sendToPrinter() {{
+                                    if (!qz.websocket.isActive()) {{
+                                        alert("请先连接 QZ Tray");
+                                        return;
+                                    }}
+                                    try {{
+                                        const config = qz.configs.create("AM-243-BT");
+                                        await qz.print(config, [{{
+                                            type: 'pdf',
+                                            format: 'base64',
+                                            data: "{base64_pdf}"
+                                        }}]);
+                                        alert("✅ 打印成功！");
+                                    }} catch (err) {{
+                                        alert("打印失败: " + err);
+                                    }}
                                 }}
                                 </script>
                             </body>
