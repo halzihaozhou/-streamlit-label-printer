@@ -1,7 +1,7 @@
 import streamlit.components.v1 as components
+import json
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
-import json
 
 
 def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
@@ -11,8 +11,7 @@ def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
 
     try:
         font = ImageFont.truetype("DejaVuSans-Bold.ttf", 20)
-    except Exception as e:
-        print("Font load error:", e)
+    except Exception:
         font = ImageFont.load_default()
 
     draw.text((10, 30),
@@ -27,21 +26,26 @@ def generate_barcode_image(tracking_number: str, description: str) -> BytesIO:
     return buffer
 
 
-def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
+def render_qz_image_html(base64_img: str):
     base64_clean = base64_img.replace('\n', '')
-    base64_img_js = json.dumps(base64_clean)  # 确保是合法 JS 字符串
+    base64_img_js = json.dumps(base64_clean)
 
     html_code = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Print Image with QZ Tray</title>
+        <title>Print with QZ Tray</title>
         <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
     </head>
     <body>
-        <h4>正在连接 QZ Tray...</h4>
+        <h4>选择打印机并打印图像：</h4>
+        <select id="printerSelect">
+            <option>🔄 加载中...</option>
+        </select>
+        <br><br>
         <button onclick="sendToPrinter()">🖨️ 打印图像</button>
+
         <script>
         const base64_img = {base64_img_js};
 
@@ -62,13 +66,24 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
             try {{
                 await qz.websocket.connect();
                 alert("✅ QZ Tray 已连接");
+
+                // 加载打印机列表
+                const printers = await qz.printers.find();
+                const select = document.getElementById("printerSelect");
+                select.innerHTML = "";
+                printers.forEach(name => {{
+                    const option = document.createElement("option");
+                    option.textContent = name;
+                    select.appendChild(option);
+                }});
             }} catch (e) {{
-                alert("⚠️ 无法连接 QZ Tray，请确保客户端已启动: " + e);
+                alert("⚠️ 无法连接 QZ Tray: " + e);
             }}
         }};
 
         async function sendToPrinter() {{
-            console.log("🔍 打印机名: {printer_name}");
+            const printerName = document.getElementById("printerSelect").value;
+
             if (!qz.websocket.isActive()) {{
                 alert("请先连接 QZ Tray");
                 return;
@@ -80,7 +95,7 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
             }}
 
             try {{
-                const config = qz.configs.create("{printer_name}", {{
+                const config = qz.configs.create(printerName, {{
                     copies: 1,
                     rasterize: false,
                     altPrinting: false
@@ -101,4 +116,4 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
     </html>
     """
 
-    components.html(html_code, height=400)
+    components.html(html_code, height=450)
