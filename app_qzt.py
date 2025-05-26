@@ -18,7 +18,7 @@ authenticator = stauth.Authenticate(config['credentials'],
                                     config['cookie']['name'],
                                     config['cookie']['key'],
                                     config['cookie']['expiry_days']
-
+                                   )
 # Sidebar navigation
 page = st.sidebar.selectbox("Navigate", ["Login", "Register", "Forgot Password", "Forgot Username"])
 
