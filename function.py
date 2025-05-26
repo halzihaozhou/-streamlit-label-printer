@@ -1,12 +1,18 @@
 import streamlit.components.v1 as components
 import json
 
+import streamlit.components.v1 as components
+import json
+
+import streamlit.components.v1 as components
+import json
+
 
 def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
     base64_clean = base64_img.replace('\n', '')
     base64_img_js = json.dumps(base64_clean)
 
-    html_code = f'''
+    html_code = f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -20,8 +26,12 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
         <script>
         const base64_img = {base64_img_js};
 
-        // ✅ 禁用签名验证（开发测试）
         qz.security.setSignaturePromise(() => Promise.resolve());
+
+        qz.api.setExceptionHandler(err => {{
+            console.warn("QZ Exception Bypassed:", err.message);
+            return false;
+        }});
 
         window.onload = async function() {{
             if (typeof qz === 'undefined') {{
@@ -52,7 +62,9 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
 
             try {{
                 const config = qz.configs.create("{printer_name}", {{
-                    copies: 1
+                    copies: 1,
+                    rasterize: false,
+                    altPrinting: false
                 }});
                 await qz.print(config, [{{
                     type: 'image',
@@ -68,7 +80,7 @@ def render_qz_image_html(base64_img: str, printer_name: str = "AM-243-BT"):
         </script>
     </body>
     </html>
-    '''
+    """
 
     components.html(html_code, height=400)
 
