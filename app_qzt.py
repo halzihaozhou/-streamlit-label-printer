@@ -84,23 +84,23 @@ if page == "Login":
                                     }}
                                 }}
 
-                                async function sendToPrinter() {{
-                                    if (!qz.websocket.isActive()) {{
-                                        alert("请先连接 QZ Tray");
-                                        return;
-                                    }}
-                                    try {{
-                                        const config = qz.configs.create("AM-243-BT");
-                                        const rawData = atob("{base64_pdf}");
-                                        const bytes = new Uint8Array(rawData.length);
-                                        for (let i = 0; i < rawData.length; i++) {{
-                                            bytes[i] = rawData.charCodeAt(i);
-                                        }}
-                                        await qz.print(config, [bytes]);
-                                        alert("✅ 打印成功！");
-                                    }} catch (err) {{
-                                        alert("打印失败: " + err);
-                                    }}
+                                async function sendToPrinter() {
+                                  if (!qz.websocket.isActive()) {
+                                    alert("请先连接 QZ Tray");
+                                    return;
+                                  }
+                                  try {
+                                    const config = qz.configs.create("AM-243-BT");
+                                    await qz.print(config, [{
+                                      type: 'pdf',
+                                      format: 'base64',
+                                      data: "{base64_pdf}"
+                                    }]);
+                                    alert("✅ 打印成功！");
+                                  } catch (err) {
+                                    alert("打印失败: " + err);
+                                  }
+                                }
                                 }}
                                 </script>
                             </body>
