@@ -3,8 +3,6 @@ from barcode.codex import Code128
 from barcode.writer import ImageWriter
 from PIL import Image, ImageDraw, ImageFont
 import io
-import streamlit.components.v1 as components
-import json
 
 
 def generate_barcode_pdf(label, description, dpi=300):
@@ -66,6 +64,10 @@ def generate_barcode_pdf(label, description, dpi=300):
     return output_buffer
 
 
+import streamlit.components.v1 as components
+import json
+
+
 def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
     base64_clean = base64_pdf.replace('\n', '')
     base64_pdf_js = json.dumps(base64_clean)
@@ -77,7 +79,7 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         <title>Print with QZ Tray</title>
         <script src="https://cdn.jsdelivr.net/npm/rsvp@4.8.5/dist/rsvp.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
     </head>
     <body>
         <h4>正在连接 QZ Tray...</h4>
@@ -85,10 +87,9 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         <script>
         const base64_pdf = {base64_pdf_js};
 
-        // ⛔ 签名配置（如不使用证书，返回空签名即可）
+        // ✅ 修复: 使用小写 sha256()
         qz.security.setSignaturePromise(function(toSign) {{
-            // ✅ 开发测试环境：不验证签名
-            return Promise.resolve(Sha256 ? Sha256(toSign) : '');
+            return Promise.resolve(sha256(toSign));
         }});
 
         window.onload = async function() {{
@@ -105,8 +106,8 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         }}
 
         async function sendToPrinter() {{
-            console.log("base64_pdf typeof:", typeof base64_pdf);
-            console.log("base64_pdf preview:", base64_pdf?.substring(0, 100));
+            console.log("✅ base64_pdf typeof:", typeof base64_pdf);
+            console.log("✅ base64_pdf preview:", base64_pdf?.substring(0, 100));
 
             if (!qz.websocket.isActive()) {{
                 alert("请先连接 QZ Tray");
@@ -126,7 +127,12 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
                     colorType: "color",
                     density: "default",
                     altPrinting: false,
-                    rasterize: false
+                    rasterize: false,
+                    jobName: "LabelPrintJob",
+                    units: "px",
+                    fallbackDensity: 300,
+                    pxPerInch: 300,
+                    paperThickness: null
                 }});
                 await qz.print(config, [{{
                     type: 'pdf',
