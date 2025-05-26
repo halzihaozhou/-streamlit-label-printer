@@ -67,6 +67,7 @@ def generate_barcode_pdf(label, description, dpi=300):
 
 
 def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
+
     base64_clean = base64_pdf.replace('\n', '')
     base64_pdf_js = json.dumps(base64_clean)
 
@@ -98,18 +99,19 @@ def render_qz_html(base64_pdf: str, printer_name: str = "AM-243-BT"):
         }}
 
         async function sendToPrinter() {{
+            // ✅ Debug: 检查 base64_pdf 是否传入
+            console.log("base64_pdf typeof:", typeof base64_pdf);
+            console.log("base64_pdf preview:", base64_pdf?.substring(0, 100));
+
             if (!qz.websocket.isActive()) {{
                 alert("请先连接 QZ Tray");
                 return;
             }}
 
             if (!base64_pdf || typeof base64_pdf !== 'string') {{
-                alert("❌ base64 数据无效！");
-                console.log("base64_pdf:", base64_pdf);
+                alert("❌ base64_pdf 是空的或不是字符串！");
                 return;
             }}
-
-            console.log("✅ base64_pdf 前 50 字符:", base64_pdf.substring(0, 50));
 
             try {{
                 const config = qz.configs.create("{printer_name}");
