@@ -79,9 +79,12 @@ if page == "Login":
                                     printers = response.json()
                                     printer_id = None
                                     for printer in printers:
-                                        if (printer["name"] == "_AM_243_BT"
-                                                and printer["computer"]["name"]
-                                                == "ZIHAOS-MBP.ATTLOCAL.NET"):
+                                        st.write(
+                                            f"DEBUG: Found printer {printer['name']} on {printer['computer']['name']}"
+                                        )
+                                        if "AM-243-BT" in printer[
+                                                "name"] and "ZIHAOS-MBP" in printer[
+                                                    "computer"]["name"]:
                                             printer_id = printer["id"]
                                             break
 
